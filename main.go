@@ -108,25 +108,7 @@ func generateCodeFile(problemID int, cfg *Config, category string) error {
 	// 使用一步到位的方法
 	codeContent, problemInfo, err := generateDirectCode(problemID, cfg, category)
 	if err != nil {
-		// 如果一步到位方法失败，回退到两步法
-		fmt.Println("⚠️ 一步到位生成失败，尝试分步获取...")
-
-		// 获取题目信息
-		problemInfo, err = fetchProblemInfo(problemID, cfg)
-		if err != nil {
-			return fmt.Errorf("获取题目信息失败: %v", err)
-		}
-
-		fmt.Printf("✅ 题目信息获取成功: %s\n", problemInfo["title"])
-		fmt.Printf("🧩 生成代码骨架 (完整度: %d%%)...\n", cfg.SkeletonLevel)
-
-		// 生成代码骨架
-		codeContent, err = generateCodeSkeleton(problemInfo, cfg, category)
-		if err != nil {
-			return fmt.Errorf("生成代码骨架失败: %v", err)
-		}
-	} else {
-		fmt.Println("✅ 代码直接生成成功!")
+		return fmt.Errorf("生成代码骨架失败: %v", err)
 	}
 
 	// 创建文件名
@@ -135,12 +117,18 @@ func generateCodeFile(problemID int, cfg *Config, category string) error {
 		title = fmt.Sprintf("题目%d", problemID)
 	}
 
-	// 使用符合Go测试规范的文件名
-	filename := fmt.Sprintf("%s_test.%s",
-		fmt.Sprintf("leetcode_%d", problemID),
+	// 使用符合测试规范的文件名
+	filename := fmt.Sprintf("leetcode_%d_test.%s",
+		problemID,
 		getFileExtension(cfg.Language))
 
-	filePath := filepath.Join(cfg.OutputDir, filename)
+	// 根据语言创建子目录
+	langDir := filepath.Join(cfg.OutputDir, cfg.Language)
+	if err := os.MkdirAll(langDir, 0755); err != nil {
+		return fmt.Errorf("无法创建语言目录: %v", err)
+	}
+
+	filePath := filepath.Join(langDir, filename)
 
 	// 添加题目信息注释
 	difficulty, ok := problemInfo["difficulty"].(string)

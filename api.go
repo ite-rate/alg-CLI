@@ -86,41 +86,6 @@ func callLLM(prompt string, cfg *Config) (string, error) {
 	return content, nil
 }
 
-// 获取LeetCode题目信息
-func fetchProblemInfo(problemID int, cfg *Config) (map[string]interface{}, error) {
-	prompt := generateProblemInfoPrompt(problemID)
-
-	response, err := callLLM(prompt, cfg)
-	if err != nil {
-		return nil, err
-	}
-
-	// 尝试解析JSON响应
-	var problemInfo map[string]interface{}
-	err = json.Unmarshal([]byte(response), &problemInfo)
-	if err != nil {
-		// 如果JSON解析失败，尝试从文本中提取结构化信息
-		problemInfo = extractStructuredInfo(response)
-	}
-
-	return problemInfo, nil
-}
-
-// 生成代码骨架
-func generateCodeSkeleton(problemInfo map[string]interface{}, cfg *Config, category string) (string, error) {
-	prompt := generateCodeSkeletonPrompt(problemInfo, cfg, category)
-
-	response, err := callLLM(prompt, cfg)
-	if err != nil {
-		return "", err
-	}
-
-	// 清理代码 - 移除可能的Markdown格式
-	cleanedCode := cleanCode(response)
-
-	return cleanedCode, nil
-}
-
 // 清理代码 - 移除Markdown代码块标记等
 func cleanCode(codeText string) string {
 	// 移除可能的Markdown代码块格式
@@ -162,7 +127,6 @@ func generateDirectCode(problemID int, cfg *Config, category string) (string, ma
 	// 提取基本题目信息用于显示
 	info := make(map[string]interface{})
 	info["title"] = title
-	info["difficulty"] = "未知" // 可以从代码中尝试提取
 	info["description"] = "由大模型直接生成"
 
 	return cleanedCode, info, nil
@@ -204,50 +168,4 @@ func extractTitleFromCode(code string, defaultID int) string {
 	}
 
 	return defaultTitle
-}
-
-// 根据题目信息生成代码骨架的Prompt
-func generateCodeSkeletonPrompt(problemInfo map[string]interface{}, cfg *Config, category string) string {
-	title, _ := problemInfo["title"].(string)
-	difficulty, _ := problemInfo["difficulty"].(string)
-	description, _ := problemInfo["description"].(string)
-	examples, _ := problemInfo["examples"].(string)
-	constraints, _ := problemInfo["constraints"].(string)
-
-	levelDescription := "完整代码框架但关键算法实现部分留空，添加TODO注释指导如何实现"
-	if cfg.SkeletonLevel < 20 {
-		levelDescription = "仅提供基本函数签名和简单注释"
-	} else if cfg.SkeletonLevel > 70 {
-		levelDescription = "几乎完整的解决方案，只有少量关键部分需要填写"
-	}
-
-	algorithmGuidance := ""
-	if category != "" {
-		algorithmGuidance = fmt.Sprintf(`请特别关注%s算法相关的解题思路，并在注释中提供这种方法的关键步骤。`, category)
-	}
-
-	return fmt.Sprintf(`你是一个算法专家，精通LeetCode题库。请为以下LeetCode题目创建一个%s语言的代码骨架：
-
-题目标题: %s
-难度: %s
-题目描述: %s
-示例: %s
-约束条件: %s
-
-要求:
-1. 代码完整度为%d%%，这意味着%s
-2. 添加注释解释算法思路和时间复杂度
-3. 对需要学生实现的部分使用TODO注释清晰标记
-4. 在注释中提供解题的关键步骤提示，但不给出完整实现
-5. 提供至少两种可能的解法框架
-6. 所有注释、题目描述和提示必须使用中文
-7. 不要使用main函数，而是使用Go语言的测试函数格式 (func TestXxx(t *testing.T))
-8. 添加至少2个测试用例，便于使用"go test"命令直接运行和调试
-9. 文件应该是一个完整的可直接运行的测试文件，包含必要的import (如"testing"包)
-10. 确保测试代码能够直接编译运行，不会有变量声明但未使用的错误
-11. 提供比较函数确保测试数据可以正确验证，特别是对于需要忽略顺序的情况
-
-%s
-
-只返回代码，不需要其他解释。`, cfg.Language, title, difficulty, description, examples, constraints, cfg.SkeletonLevel, levelDescription, algorithmGuidance)
 }
