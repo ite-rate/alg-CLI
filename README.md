@@ -17,7 +17,7 @@ alg是一个命令行工具，用于生成LeetCode算法题目的代码骨架，
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/alg.git
+git clone https://github.com/ite-rate/alg-CLI.git
 cd alg
 
 # 构建
@@ -38,7 +38,7 @@ source ~/.bashrc  # 或者 source ~/.zshrc（如果使用zsh）
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/alg.git
+git clone https://github.com/ite-rate/alg-CLI.git
 cd alg
 
 # 构建
