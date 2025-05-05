@@ -32,13 +32,21 @@ var algoCategories = []string{
 	"数学", "位操作", "并查集", "前缀和", "滑动窗口",
 }
 
+// 获取API URL，优先使用环境变量，否则使用默认值
+func getApiUrl() string {
+	if url := os.Getenv("ARK_API_URL"); url != "" {
+		return url
+	}
+	return "https://maas-cn-southwest-2.modelarts-maas.com/v1/infers/8a062fd4-7367-4ab4-a936-5eeb8fb821c4/v1/chat/completions"
+}
+
 func main() {
 	// 解析命令行参数
 	problemID := flag.Int("id", 0, "LeetCode题目ID")
 	language := flag.String("lang", "go", "编程语言")
 	level := flag.Int("level", 30, "代码骨架完整度(0-100)")
 	category := flag.String("category", "", "算法分类")
-	model := flag.String("model", "deepseek-v3-250324", "LLM模型 (可选: deepseek-v3-250324, deepseek-r1-250120)")
+	model := flag.String("model", "DeepSeek-R1", "LLM模型 (可选: DeepSeek-V3, DeepSeek-R1, deepseek-v3-250324, deepseek-r1-250120)")
 	output := flag.String("output", "leetcode_practice", "输出目录")
 
 	flag.Parse()
@@ -73,7 +81,7 @@ func main() {
 	// 加载配置
 	cfg := &Config{
 		ApiKey:        os.Getenv("ARK_API_KEY"),
-		ApiUrl:        "https://ark.cn-beijing.volces.com/api/v3/chat/completions",
+		ApiUrl:        getApiUrl(),
 		Model:         *model,
 		Language:      *language,
 		SkeletonLevel: *level,
