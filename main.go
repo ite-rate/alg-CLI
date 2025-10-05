@@ -46,7 +46,7 @@ func main() {
 	language := flag.String("lang", "go", "编程语言")
 	level := flag.Int("level", 30, "代码骨架完整度(0-100)")
 	category := flag.String("category", "", "算法分类")
-	model := flag.String("model", "DeepSeek-R1", "LLM模型 (可选: DeepSeek-V3, DeepSeek-R1, deepseek-v3-250324, deepseek-r1-250120)")
+	model := flag.String("model", "deepseek-v3-1-terminus", "LLM模型 (可选: DeepSeek-V3, DeepSeek-R1, deepseek-v3-250324, deepseek-r1-250120)")
 	output := flag.String("output", "leetcode_practice", "输出目录")
 
 	flag.Parse()
