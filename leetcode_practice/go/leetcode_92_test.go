@@ -40,7 +40,7 @@ func reverseBetween(head *ListNode, left int, right int) *ListNode {
 	// TODO: 截取子链表并反转
 	// TODO: 重新连接链表
 	dummy := &ListNode{Next: head}
-	pre := dummy
+	_ = dummy // 避免未使用变量导致编译失败（占位骨架）
 	return &ListNode{}
 }
 

@@ -173,7 +173,7 @@ func generateCodeFile(problemID int, cfg *Config, category string) error {
 		fmt.Printf("📚 算法分类: %s\n", category)
 	}
 	fmt.Printf("⚙️ 代码完整度: %d%%\n", cfg.SkeletonLevel)
-	fmt.Printf("🧪 调试命令: cd %s && go test -v %s\n", cfg.OutputDir, filename)
+	fmt.Printf("🧪 调试命令: %s\n", getDebugCommand(cfg.Language, cfg.OutputDir, filename))
 
 	return nil
 }
@@ -225,5 +225,47 @@ func getFileExtension(language string) string {
 		return "kt"
 	default:
 		return "go"
+	}
+}
+
+// 获取调试命令（仅用于打印提示，不影响生成逻辑）
+func getDebugCommand(language, outputDir, filename string) string {
+	langDir := filepath.Join(outputDir, language)
+	switch language {
+	case "go":
+		return fmt.Sprintf("cd %s && go test -v %s", langDir, filename)
+	case "c":
+		exe := strings.TrimSuffix(filename, ".c")
+		return fmt.Sprintf("cd %s && cc -std=c11 -O2 -Wall -Wextra -o %s %s && ./%s", langDir, exe, filename, exe)
+	case "cpp":
+		exe := strings.TrimSuffix(filename, ".cpp")
+		return fmt.Sprintf("cd %s && c++ -std=c++17 -O2 -Wall -Wextra -o %s %s && ./%s", langDir, exe, filename, exe)
+	case "python":
+		return fmt.Sprintf("cd %s && python3 %s", langDir, filename)
+	case "java":
+		className := strings.TrimSuffix(filename, ".java")
+		return fmt.Sprintf("cd %s && javac %s && java %s", langDir, filename, className)
+	case "javascript":
+		return fmt.Sprintf("cd %s && node %s", langDir, filename)
+	case "typescript":
+		jsName := strings.TrimSuffix(filename, ".ts") + ".js"
+		return fmt.Sprintf("cd %s && tsc %s && node %s", langDir, filename, jsName)
+	case "rust":
+		exe := strings.TrimSuffix(filename, ".rs")
+		return fmt.Sprintf("cd %s && rustc %s && ./%s", langDir, filename, exe)
+	case "php":
+		return fmt.Sprintf("cd %s && php %s", langDir, filename)
+	case "ruby":
+		return fmt.Sprintf("cd %s && ruby %s", langDir, filename)
+	case "swift":
+		exe := strings.TrimSuffix(filename, ".swift")
+		return fmt.Sprintf("cd %s && swiftc %s -o %s && ./%s", langDir, filename, exe, exe)
+	case "kotlin":
+		jar := strings.TrimSuffix(filename, ".kt") + ".jar"
+		return fmt.Sprintf("cd %s && kotlinc %s -include-runtime -d %s && java -jar %s", langDir, filename, jar, jar)
+	case "csharp":
+		return fmt.Sprintf("cd %s && # C# 单文件运行方式取决于环境（csc/dotnet-script/dotnet），请自行选择执行 %s", langDir, filename)
+	default:
+		return fmt.Sprintf("cd %s && # 请按%s语言方式运行: %s", langDir, language, filename)
 	}
 }
